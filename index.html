@@ -1,20 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <script>
-  const password = "RunesTest2025"; // Passwort hier festlegen
-
-  const eingabe = prompt("Bitte Passwort eingeben, um den Testbereich zu öffnen:");
-
-  if (eingabe !== password) {
-    document.body.innerHTML = "<h1>Zugang verweigert</h1><p>Falsches Passwort.</p>";
-    throw new Error("Falsches Passwort");
-  }
-</script>
-
   <meta charset="UTF-8" />
   <title>Runes3D – Wald der Runen</title>
-
   <style>
     :root {
       color-scheme: dark;
@@ -659,6 +647,16 @@
 </head>
 
 <body>
+   <script>
+  const password = "RunesTest2025"; // Passwort hier festlegen
+
+  const eingabe = prompt("Bitte Passwort eingeben, um den Testbereich zu öffnen:");
+
+  if (eingabe !== password) {
+    document.body.innerHTML = "<h1>Zugang verweigert</h1><p>Falsches Passwort.</p>";
+    throw new Error("Falsches Passwort");
+  }
+</script>
   <h1>Runes3D – Wald der Runen</h1>
   <div class="subtitle">
     Weltkarte im Wald-Stil, Match-3 Kämpfe und ein Leben-System ähnlich wie Candy Crush.
