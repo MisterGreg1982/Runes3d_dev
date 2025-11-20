@@ -35,6 +35,105 @@
       max-width: 640px;
     }
 
+    /* Login-Overlay */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, #020617, #000 70%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.3s ease;
+    }
+
+    #login-card {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 18px;
+      padding: 24px 28px;
+      max-width: 360px;
+      width: 90%;
+      box-shadow:
+        0 24px 50px rgba(0, 0, 0, 0.9),
+        0 0 0 1px rgba(148, 163, 184, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+    }
+
+    #login-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #f97316;
+    }
+
+    #login-subtitle {
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    #login-password {
+      margin-top: 6px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      outline: none;
+      text-align: center;
+    }
+
+    #login-password:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.8);
+    }
+
+    #login-button {
+      margin-top: 6px;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: radial-gradient(circle at 20% 0, #93c5fd, #2563eb);
+      color: #f9fafb;
+      font-weight: 600;
+      box-shadow:
+        0 4px 10px rgba(15, 23, 42, 0.9),
+        0 0 10px rgba(59, 130, 246, 0.8);
+      transform: translateY(0);
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        filter 0.12s ease;
+      width: 100%;
+    }
+
+    #login-button:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 14px rgba(15, 23, 42, 1),
+        0 0 14px rgba(129, 140, 248, 1);
+      filter: brightness(1.05);
+    }
+
+    #login-button:active {
+      transform: translateY(0);
+      box-shadow:
+        0 2px 6px rgba(15, 23, 42, 0.9),
+        0 0 8px rgba(59, 130, 246, 0.8);
+    }
+
+    #login-error {
+      min-height: 18px;
+      font-size: 0.8rem;
+      color: #fca5a5;
+      margin-top: 4px;
+    }
+
     /* Legende & Top-Controls */
     #legend {
       display: flex;
@@ -176,7 +275,7 @@
       z-index: 1;
       margin-top: 4px;
       border-radius: 16px;
-     background-image: url("forest.png");  /* Pfad bei Bedarf anpassen */
+      background-image: url("forest.png");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -187,7 +286,6 @@
       aspect-ratio: 16 / 9;
     }
 
-    /* world-row dient nur noch als „Wrapper“, macht kein eigenes Layout */
     .world-row {
       display: contents;
     }
@@ -200,7 +298,6 @@
       color: #e5e7eb;
     }
 
-    /* Level-Knoten – jetzt frei positioniert auf der Karte */
     .world-node {
       width: 68px;
       height: 68px;
@@ -479,7 +576,6 @@
       color: #fbbf24;
     }
 
-    /* Floating Damage / Heal / Schild */
     .float-text {
       position: absolute;
       left: 50%;
@@ -592,7 +688,6 @@
       margin-top: 4px;
     }
 
-    /* Board-Effekte */
     .shake {
       animation: shake 0.4s ease;
     }
@@ -617,7 +712,6 @@
       100% { filter: brightness(1); }
     }
 
-    /* Boss-Glow im Kampf */
     .boss-rage {
       animation: bossGlow 1.2s ease infinite alternate;
     }
@@ -647,227 +741,269 @@
 </head>
 
 <body>
-   <script>
-  const password = "RunesTest2025"; // Passwort hier festlegen
-
-  const eingabe = prompt("Bitte Passwort eingeben, um den Testbereich zu öffnen:");
-
-  if (eingabe !== password) {
-    document.body.innerHTML = "<h1>Zugang verweigert</h1><p>Falsches Passwort.</p>";
-    throw new Error("Falsches Passwort");
-  }
-</script>
-  <h1>Runes3D – Wald der Runen</h1>
-  <div class="subtitle">
-    Weltkarte im Wald-Stil, Match-3 Kämpfe und ein Leben-System ähnlich wie Candy Crush.
-  </div>
-
-  <div id="legend">
-    <span class="legend-item">💚 Leben</span>
-    <span class="legend-item">🧍 Held</span>
-    <span class="legend-item">🔺 Gegner (Level-Knoten)</span>
-  </div>
-
-  <div id="top-controls">
-    <button id="btn-show-world">Weltkarte</button>
-    <button id="btn-start-level1">Level 1 spielen</button>
-  </div>
-
-  <!-- Leben / Timer -->
-  <div id="lives-container">
-    <div id="lives-hearts"></div>
-    <div id="lives-text"></div>
-  </div>
-
-  <!-- Overworld / Welt 1 mit 21 Leveln -->
-  <div id="overworld-container">
-    <div id="overworld-header">
-      <div>
-        <div id="overworld-title">Welt 1 – Wald der Runen</div>
-        <div id="overworld-subtitle">Reise von Lichtung zu Lichtung und stelle dich den Runengeistern.</div>
+  <!-- Login-Overlay -->
+  <div id="login-overlay">
+    <div id="login-card">
+      <div id="login-title">Runes3D – Testzugang</div>
+      <div id="login-subtitle">
+        Geschützter Bereich für Tester. Bitte gib das Passwort ein, das du von Greg erhalten hast.
       </div>
-      <div style="font-size:0.75rem;color:#bbf7d0;">
-        Klicke eine Rune, um ein Level zu starten.
-      </div>
-    </div>
-
-    <div id="overworld-map">
-      <div id="overworld-path"></div>
-
-      <div id="forest-particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-      </div>
-
-      <!-- 21 Level in Welt 1 – Pfad schlängelt sich -->
-      <div class="world-row">
-        <div class="world-node" data-level="1">
-          <div class="world-node-level">1</div>
-          <div class="world-node-name">Waldrand</div>
-        </div>
-        <div class="world-node disabled" data-level="2">
-          <div class="world-node-level">2</div>
-          <div class="world-node-name">Moosige Senke</div>
-        </div>
-        <div class="world-node disabled" data-level="3">
-          <div class="world-node-level">3</div>
-          <div class="world-node-name">Flüsterpfad</div>
-        </div>
-      </div>
-
-      <div class="world-row">
-        <div class="world-node disabled" data-level="4">
-          <div class="world-node-level">4</div>
-          <div class="world-node-name">Verwunschene<br>Lichtung</div>
-        </div>
-        <div class="world-node disabled" data-level="5">
-          <div class="world-node-level">5</div>
-          <div class="world-node-name">Runenbrücke</div>
-        </div>
-        <div class="world-node disabled" data-level="6">
-          <div class="world-node-level">6</div>
-          <div class="world-node-name">Steinkreis</div>
-        </div>
-      </div>
-
-      <div class="world-row">
-        <div class="world-node disabled" data-level="7">
-          <div class="world-node-level">7</div>
-          <div class="world-node-name">Nebelpfad</div>
-        </div>
-        <div class="world-node disabled" data-level="8">
-          <div class="world-node-level">8</div>
-          <div class="world-node-name">Wurzelpass</div>
-        </div>
-        <div class="world-node disabled" data-level="9">
-          <div class="world-node-level">9</div>
-          <div class="world-node-name">Mondlichtlichtung</div>
-        </div>
-      </div>
-
-      <div class="world-row">
-        <div class="world-node disabled" data-level="10">
-          <div class="world-node-level">10</div>
-          <div class="world-node-name">Kristallbäume</div>
-        </div>
-        <div class="world-node disabled" data-level="11">
-          <div class="world-node-level">11</div>
-          <div class="world-node-name">Runenfels</div>
-        </div>
-        <div class="world-node disabled" data-level="12">
-          <div class="world-node-level">12</div>
-          <div class="world-node-name">Brunnen<br>der Geister</div>
-        </div>
-      </div>
-
-      <div class="world-row">
-        <div class="world-node disabled" data-level="13">
-          <div class="world-node-level">13</div>
-          <div class="world-node-name">Dämmerpfad</div>
-        </div>
-        <div class="world-node disabled" data-level="14">
-          <div class="world-node-level">14</div>
-          <div class="world-node-name">Wächtersteine</div>
-        </div>
-        <div class="world-node disabled" data-level="15">
-          <div class="world-node-level">15</div>
-          <div class="world-node-name">Funkelgraben</div>
-        </div>
-      </div>
-
-      <div class="world-row">
-        <div class="world-node disabled" data-level="16">
-          <div class="world-node-level">16</div>
-          <div class="world-node-name">Smaragdpfad</div>
-        </div>
-        <div class="world-node disabled" data-level="17">
-          <div class="world-node-level">17</div>
-          <div class="world-node-name">Rune der Tiefe</div>
-        </div>
-        <div class="world-node disabled" data-level="18">
-          <div class="world-node-level">18</div>
-          <div class="world-node-name">Efeuarchen</div>
-        </div>
-      </div>
-
-      <div class="world-row">
-        <div class="world-node disabled" data-level="19">
-          <div class="world-node-level">19</div>
-          <div class="world-node-name">Schattenhain</div>
-        </div>
-        <div class="world-node disabled" data-level="20">
-          <div class="world-node-level">20</div>
-          <div class="world-node-name">Alte Ruinen</div>
-        </div>
-        <div class="world-node disabled world-node-boss" data-level="21">
-          <div class="world-node-level">21</div>
-          <div class="world-node-name">Herz des Waldes</div>
-        </div>
-      </div>
-    </div>
-
-    <div id="overworld-message"></div>
-  </div>
-
-  <!-- Match-3 Kampf -->
-  <div id="game-container">
-    <div id="battle">
-      <div id="hero-card" class="fighter">
-        <div class="name">Held</div>
-        <div class="role">Runenbeschwörer</div>
-        <div class="hp-bar">
-          <div id="hero-hp-fill" class="hp-fill"></div>
-        </div>
-        <div id="hero-hp-text" class="hp-text"></div>
-        <div class="stats-row">
-          <div class="stat-pill">Mana: <span id="hero-mana" class="value">0</span></div>
-          <div class="stat-pill">Schild: <span id="hero-shield" class="value">0</span></div>
-          <div class="stat-pill">Ult: <span id="hero-ult" class="value">0</span></div>
-        </div>
-      </div>
-
-      <div id="enemy-card" class="fighter">
-        <div id="enemy-name" class="name">Gegner</div>
-        <div id="enemy-role" class="role"></div>
-        <div class="hp-bar">
-          <div id="enemy-hp-fill" class="hp-fill enemy"></div>
-        </div>
-        <div id="enemy-hp-text" class="hp-text"></div>
-        <div class="stats-row">
-          <div class="stat-pill">Angriff: <span id="enemy-attack" class="value"></span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Punkte & Combos -->
-    <div id="meta-hud">
-      <div class="meta-pill">
-        Punkte:
-        <span id="score-value" class="meta-value">0</span>
-      </div>
-      <div class="meta-pill">
-        Combo:
-        <span id="combo-value" class="meta-value">0</span>
-      </div>
-    </div>
-
-    <div id="board"></div>
-    <div id="message"></div>
-
-    <div id="controls">
-      <button id="new-game-btn">Neuer Kampf</button>
-      <button id="back-to-world-btn">Zurück zur Weltkarte</button>
+      <input
+        type="password"
+        id="login-password"
+        placeholder="Passwort eingeben"
+        autocomplete="off"
+      />
+      <button id="login-button">Betreten</button>
+      <div id="login-error"></div>
     </div>
   </div>
 
+  <!-- App-Inhalt (zunächst versteckt) -->
+  <div id="app" style="display:none; flex-direction:column; align-items:center; width:100%;">
+    <h1>Runes3D – Wald der Runen</h1>
+    <div class="subtitle">
+      Weltkarte im Wald-Stil, Match-3 Kämpfe und ein Leben-System ähnlich wie Candy Crush.
+    </div>
+
+    <div id="legend">
+      <span class="legend-item">💚 Leben</span>
+      <span class="legend-item">🧍 Held</span>
+      <span class="legend-item">🔺 Gegner (Level-Knoten)</span>
+    </div>
+
+    <div id="top-controls">
+      <button id="btn-show-world">Weltkarte</button>
+      <button id="btn-start-level1">Level 1 spielen</button>
+    </div>
+
+    <!-- Leben / Timer -->
+    <div id="lives-container">
+      <div id="lives-hearts"></div>
+      <div id="lives-text"></div>
+    </div>
+
+    <!-- Overworld / Welt 1 mit 21 Leveln -->
+    <div id="overworld-container">
+      <div id="overworld-header">
+        <div>
+          <div id="overworld-title">Welt 1 – Wald der Runen</div>
+          <div id="overworld-subtitle">
+            Reise von Lichtung zu Lichtung und stelle dich den Runengeistern.
+          </div>
+        </div>
+        <div style="font-size:0.75rem;color:#bbf7d0;">
+          Klicke eine Rune, um ein Level zu starten.
+        </div>
+      </div>
+
+      <div id="overworld-map">
+        <div id="overworld-path"></div>
+
+        <div id="forest-particles">
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+        </div>
+
+        <div class="world-row">
+          <div class="world-node" data-level="1">
+            <div class="world-node-level">1</div>
+            <div class="world-node-name">Waldrand</div>
+          </div>
+          <div class="world-node disabled" data-level="2">
+            <div class="world-node-level">2</div>
+            <div class="world-node-name">Moosige Senke</div>
+          </div>
+          <div class="world-node disabled" data-level="3">
+            <div class="world-node-level">3</div>
+            <div class="world-node-name">Flüsterpfad</div>
+          </div>
+        </div>
+
+        <div class="world-row">
+          <div class="world-node disabled" data-level="4">
+            <div class="world-node-level">4</div>
+            <div class="world-node-name">Verwunschene<br>Lichtung</div>
+          </div>
+          <div class="world-node disabled" data-level="5">
+            <div class="world-node-level">5</div>
+            <div class="world-node-name">Runenbrücke</div>
+          </div>
+          <div class="world-node disabled" data-level="6">
+            <div class="world-node-level">6</div>
+            <div class="world-node-name">Steinkreis</div>
+          </div>
+        </div>
+
+        <div class="world-row">
+          <div class="world-node disabled" data-level="7">
+            <div class="world-node-level">7</div>
+            <div class="world-node-name">Nebelpfad</div>
+          </div>
+          <div class="world-node disabled" data-level="8">
+            <div class="world-node-level">8</div>
+            <div class="world-node-name">Wurzelpass</div>
+          </div>
+          <div class="world-node disabled" data-level="9">
+            <div class="world-node-level">9</div>
+            <div class="world-node-name">Mondlichtlichtung</div>
+          </div>
+        </div>
+
+        <div class="world-row">
+          <div class="world-node disabled" data-level="10">
+            <div class="world-node-level">10</div>
+            <div class="world-node-name">Kristallbäume</div>
+          </div>
+          <div class="world-node disabled" data-level="11">
+            <div class="world-node-level">11</div>
+            <div class="world-node-name">Runenfels</div>
+          </div>
+          <div class="world-node disabled" data-level="12">
+            <div class="world-node-level">12</div>
+            <div class="world-node-name">Brunnen<br>der Geister</div>
+          </div>
+        </div>
+
+        <div class="world-row">
+          <div class="world-node disabled" data-level="13">
+            <div class="world-node-level">13</div>
+            <div class="world-node-name">Dämmerpfad</div>
+          </div>
+          <div class="world-node disabled" data-level="14">
+            <div class="world-node-level">14</div>
+            <div class="world-node-name">Wächtersteine</div>
+          </div>
+          <div class="world-node disabled" data-level="15">
+            <div class="world-node-level">15</div>
+            <div class="world-node-name">Funkelgraben</div>
+          </div>
+        </div>
+
+        <div class="world-row">
+          <div class="world-node disabled" data-level="16">
+            <div class="world-node-level">16</div>
+            <div class="world-node-name">Smaragdpfad</div>
+          </div>
+          <div class="world-node disabled" data-level="17">
+            <div class="world-node-level">17</div>
+            <div class="world-node-name">Rune der Tiefe</div>
+          </div>
+          <div class="world-node disabled" data-level="18">
+            <div class="world-node-level">18</div>
+            <div class="world-node-name">Efeuarchen</div>
+          </div>
+        </div>
+
+        <div class="world-row">
+          <div class="world-node disabled" data-level="19">
+            <div class="world-node-level">19</div>
+            <div class="world-node-name">Schattenhain</div>
+          </div>
+          <div class="world-node disabled" data-level="20">
+            <div class="world-node-level">20</div>
+            <div class="world-node-name">Alte Ruinen</div>
+          </div>
+          <div class="world-node disabled world-node-boss" data-level="21">
+            <div class="world-node-level">21</div>
+            <div class="world-node-name">Herz des Waldes</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="overworld-message"></div>
+    </div>
+
+    <!-- Match-3 Kampf -->
+    <div id="game-container">
+      <div id="battle">
+        <div id="hero-card" class="fighter">
+          <div class="name">Held</div>
+          <div class="role">Runenbeschwörer</div>
+          <div class="hp-bar">
+            <div id="hero-hp-fill" class="hp-fill"></div>
+          </div>
+          <div id="hero-hp-text" class="hp-text"></div>
+          <div class="stats-row">
+            <div class="stat-pill">Mana: <span id="hero-mana" class="value">0</span></div>
+            <div class="stat-pill">Schild: <span id="hero-shield" class="value">0</span></div>
+            <div class="stat-pill">Ult: <span id="hero-ult" class="value">0</span></div>
+          </div>
+        </div>
+
+        <div id="enemy-card" class="fighter">
+          <div id="enemy-name" class="name">Gegner</div>
+          <div id="enemy-role" class="role"></div>
+          <div class="hp-bar">
+            <div id="enemy-hp-fill" class="hp-fill enemy"></div>
+          </div>
+          <div id="enemy-hp-text" class="hp-text"></div>
+          <div class="stats-row">
+            <div class="stat-pill">Angriff: <span id="enemy-attack" class="value"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="meta-hud">
+        <div class="meta-pill">
+          Punkte:
+          <span id="score-value" class="meta-value">0</span>
+        </div>
+        <div class="meta-pill">
+          Combo:
+          <span id="combo-value" class="meta-value">0</span>
+        </div>
+      </div>
+
+      <div id="board"></div>
+      <div id="message"></div>
+
+      <div id="controls">
+        <button id="new-game-btn">Neuer Kampf</button>
+        <button id="back-to-world-btn">Zurück zur Weltkarte</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login-Logik -->
+  <script>
+    const PASSWORD = "RunesTest2025";
+
+    const loginOverlay = document.getElementById("login-overlay");
+    const loginPassword = document.getElementById("login-password");
+    const loginButton = document.getElementById("login-button");
+    const loginError = document.getElementById("login-error");
+    const app = document.getElementById("app");
+
+    function tryLogin() {
+      const value = loginPassword.value.trim();
+      if (value === PASSWORD) {
+        loginError.textContent = "";
+        loginOverlay.style.opacity = "0";
+        loginOverlay.style.pointerEvents = "none";
+        app.style.display = "flex";
+      } else {
+        loginError.textContent = "Falsches Passwort. Bitte versuch es erneut.";
+      }
+    }
+
+    loginButton.addEventListener("click", tryLogin);
+    loginPassword.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        tryLogin();
+      }
+    });
+  </script>
+
+  <!-- Game-Logik -->
   <script>
     // --- Grunddaten ---
     const ROWS = 6;
     const COLS = 6;
-    const COLORS = ["#ef4444", "#3b82f6", "#22c55e", "#eab308", "#a855f7"]; // Rot, Blau, Grün, Gelb, Lila
+    const COLORS = ["#ef4444", "#3b82f6", "#22c55e", "#eab308", "#a855f7"];
 
     const COLOR_TYPES = {
       "#ef4444": "red",
@@ -877,7 +1013,6 @@
       "#a855f7": "purple"
     };
 
-    // DOM-Referenzen
     const overworldContainer = document.getElementById("overworld-container");
     const overworldMessage = document.getElementById("overworld-message");
     const overworldMap = document.getElementById("overworld-map");
@@ -914,7 +1049,6 @@
     const scoreEl = document.getElementById("score-value");
     const comboEl = document.getElementById("combo-value");
 
-    // Leben-System
     const MAX_LIVES = 5;
     const LIFE_REGEN_MINUTES = 15;
     const LIFE_REGEN_MS = LIFE_REGEN_MINUTES * 60 * 1000;
@@ -925,7 +1059,6 @@
       lastUpdate: Date.now()
     };
 
-    // Spielzustand
     let board = [];
     let selectedTile = null;
     let hero;
@@ -933,9 +1066,7 @@
     let battleOver = false;
 
     let currentLevel = 1;
-    let maxUnlockedLevel = 1; // Start: nur Level 1
-
-    // Wie weit der Spieler auf der Karte "in die Zukunft" sehen darf
+    let maxUnlockedLevel = 1;
     const VISIBLE_LEVEL_AHEAD = 0;
 
     let score = 0;
@@ -946,30 +1077,28 @@
       if (comboEl) comboEl.textContent = comboChain.toString();
     }
 
-    // --- Positionen der 21 Level (Prozentwerte relativ zur Karte) ---
-    // Kannst du jederzeit feinjustieren, wenn ein Punkt nicht exakt auf einem Stein sitzt.
     const world1Positions = [
-      { x: 0.16, y: 0.82 }, // 1 – unten links
-      { x: 0.24, y: 0.77 }, // 2
-      { x: 0.32, y: 0.72 }, // 3
-      { x: 0.40, y: 0.68 }, // 4
-      { x: 0.47, y: 0.63 }, // 5
-      { x: 0.54, y: 0.59 }, // 6
-      { x: 0.60, y: 0.54 }, // 7
-      { x: 0.66, y: 0.49 }, // 8
-      { x: 0.71, y: 0.44 }, // 9
-      { x: 0.74, y: 0.38 }, // 10
-      { x: 0.70, y: 0.33 }, // 11 – kleiner Schlenker
-      { x: 0.63, y: 0.30 }, // 12
-      { x: 0.56, y: 0.28 }, // 13
-      { x: 0.48, y: 0.27 }, // 14
-      { x: 0.40, y: 0.28 }, // 15
-      { x: 0.33, y: 0.30 }, // 16
-      { x: 0.27, y: 0.34 }, // 17
-      { x: 0.22, y: 0.39 }, // 18
-      { x: 0.19, y: 0.45 }, // 19
-      { x: 0.20, y: 0.52 }, // 20
-      { x: 0.23, y: 0.58 }  // 21 – näher Richtung Mitte
+      { x: 0.16, y: 0.82 },
+      { x: 0.24, y: 0.77 },
+      { x: 0.32, y: 0.72 },
+      { x: 0.40, y: 0.68 },
+      { x: 0.47, y: 0.63 },
+      { x: 0.54, y: 0.59 },
+      { x: 0.60, y: 0.54 },
+      { x: 0.66, y: 0.49 },
+      { x: 0.71, y: 0.44 },
+      { x: 0.74, y: 0.38 },
+      { x: 0.70, y: 0.33 },
+      { x: 0.63, y: 0.30 },
+      { x: 0.56, y: 0.28 },
+      { x: 0.48, y: 0.27 },
+      { x: 0.40, y: 0.28 },
+      { x: 0.33, y: 0.30 },
+      { x: 0.27, y: 0.34 },
+      { x: 0.22, y: 0.39 },
+      { x: 0.19, y: 0.45 },
+      { x: 0.20, y: 0.52 },
+      { x: 0.23, y: 0.58 }
     ];
 
     function applyWorldPositions() {
@@ -982,7 +1111,6 @@
       });
     }
 
-    // --- Leben laden/speichern ---
     function loadLivesState() {
       try {
         const raw = localStorage.getItem(LIVES_STORAGE_KEY);
@@ -1062,7 +1190,6 @@
       return true;
     }
 
-    // --- Weltkarte ---
     function updateWorldUnlockUI() {
       const MAX_LEVEL_IN_WORLD = 21;
       const maxVisibleLevel = Math.min(
@@ -1121,7 +1248,6 @@
       initBattle(level);
     }
 
-    // --- Kampf-Setup ---
     function initBattle(level) {
       battleOver = false;
       currentLevel = level;
@@ -1148,7 +1274,6 @@
         ": Rot = Schaden, Grün = Heilung, Blau = Mana, Gelb = Schild, Lila = Spezialenergie.";
     }
 
-    // Gegner-Skalierung: erste 21 Level bewusst einfach
     function createEnemyForLevel(level) {
       const WORLD_SIZE = 21;
       const worldIndex = Math.floor((level - 1) / WORLD_SIZE) + 1;
@@ -1156,8 +1281,8 @@
 
       const baseHPWorld1 = 50;
       const baseAttackWorld1 = 4;
-      const hpPerLevelWorld1 = 2;    // sehr sanft
-      const atkPerLevelWorld1 = 0.4; // sehr sanft
+      const hpPerLevelWorld1 = 2;
+      const atkPerLevelWorld1 = 0.4;
 
       const worldHpFactor = 1 + 0.5 * (worldIndex - 1);
       const worldAtkFactor = 1 + 0.5 * (worldIndex - 1);
@@ -1212,7 +1337,6 @@
       heroUltEl.textContent = hero.ult;
     }
 
-    // --- Board / Match-3 ---
     function randomColor() {
       return COLORS[Math.floor(Math.random() * COLORS.length)];
     }
@@ -1305,7 +1429,6 @@
     function findMatches() {
       const matches = [];
 
-      // Horizontal
       for (let r = 0; r < ROWS; r++) {
         let start = 0;
         for (let c = 1; c <= COLS; c++) {
@@ -1319,7 +1442,6 @@
         }
       }
 
-      // Vertikal
       for (let c = 0; c < COLS; c++) {
         let start = 0;
         for (let r = 1; r <= ROWS; r++) {
@@ -1345,7 +1467,6 @@
       return result;
     }
 
-    // Cluster für 3er/4er/5er/L/T
     function clusterMatches(matches) {
       const byKey = new Map();
       for (const m of matches) {
@@ -1505,7 +1626,6 @@
       step();
     }
 
-    // --- Effekte & Gegnerzug ---
     function applyPlayerEffects(counts) {
       if (battleOver) return;
 
@@ -1653,7 +1773,6 @@
       return false;
     }
 
-    // --- Events ---
     btnShowWorld.addEventListener("click", () => {
       showWorld();
     });
@@ -1688,7 +1807,6 @@
         "Wähle eine Runen-Lichtung aus, um in den Kampf zu ziehen.";
     });
 
-    // --- Init ---
     window.addEventListener("load", () => {
       loadLivesState();
       updateLivesFromTime();
