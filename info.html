@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Runes3D – Wald der Runen</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI";
+      background: radial-gradient(circle at top, #1f2937, #020617 55%, #000 100%);
+      color: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 1.6rem;
+      color: #f97316;
+      letter-spacing: 0.03em;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-bottom: 10px;
+      text-align: center;
+      max-width: 640px;
+    }
+
+    /* Legende & Top-Controls */
+    #legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+
+    .legend-item {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    #top-controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: radial-gradient(circle at 20% 0, #93c5fd, #2563eb);
+      color: #f9fafb;
+      font-weight: 600;
+      box-shadow:
+        0 4px 10px rgba(15, 23, 42, 0.9),
+        0 0 10px rgba(59, 130, 246, 0.8);
+      transform: translateY(0);
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        filter 0.12s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 14px rgba(15, 23, 42, 1),
+        0 0 14px rgba(129, 140, 248, 1);
+      filter: brightness(1.05);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow:
+        0 2px 6px rgba(15, 23, 42, 0.9),
+        0 0 8px rgba(59, 130, 246, 0.8);
+    }
+
+    /* Leben (Candy-Crush-Style) */
+    #lives-container {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.85rem;
+    }
+
+    #lives-hearts {
+      font-size: 1.3rem;
+      letter-spacing: 2px;
+    }
+
+    #lives-text {
+      color: #9ca3af;
+    }
+
+    /* OVERWORLD – Waldkarte */
+    #overworld-container {
+      margin: 16px 0 28px;
+      padding: 18px;
+      background:
+        radial-gradient(circle at 20% 0%, #16a34a 0, #065f46 30%, #022c22 60%, #020617 100%);
+      border-radius: 20px;
+      box-shadow:
+        0 24px 50px rgba(0, 0, 0, 0.85),
+        0 0 0 1px rgba(22, 101, 52, 0.6);
+      max-width: 720px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #overworld-container::before {
+      content: "";
+      position: absolute;
+      inset: -60px;
+      background-image:
+        radial-gradient(circle at 10% 10%, rgba(34, 197, 94, 0.35), transparent 55%),
+        radial-gradient(circle at 80% 20%, rgba(52, 211, 153, 0.35), transparent 60%),
+        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.25), transparent 60%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    #overworld-header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+    }
+
+    #overworld-title {
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    #overworld-subtitle {
+      font-size: 0.8rem;
+      color: #d1fae5;
+    }
+
+    #overworld-map {
+      position: relative;
+      z-index: 1;
+      margin-top: 4px;
+      border-radius: 16px;
+     background-image: url("forest.png");  /* Pfad bei Bedarf anpassen */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      box-shadow:
+        inset 0 0 0 1px rgba(6, 95, 70, 0.7),
+        0 16px 35px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+    }
+
+    /* world-row dient nur noch als „Wrapper“, macht kein eigenes Layout */
+    .world-row {
+      display: contents;
+    }
+
+    #overworld-message {
+      position: relative;
+      z-index: 2;
+      min-height: 22px;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+    }
+
+    /* Level-Knoten – jetzt frei positioniert auf der Karte */
+    .world-node {
+      width: 68px;
+      height: 68px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 30% 15%, rgba(248, 250, 252, 0.9), transparent 55%),
+        radial-gradient(circle at center, #22c55e, #15803d 65%, #052e16 100%);
+      box-shadow:
+        0 0 14px rgba(52, 211, 153, 0.9),
+        0 10px 14px rgba(0, 0, 0, 0.9);
+      border: 2px solid rgba(187, 247, 208, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        filter 0.12s ease,
+        border-color 0.12s ease,
+        opacity 0.12s ease;
+    }
+
+    .world-node.disabled {
+      opacity: 0.35;
+      cursor: default;
+      filter: grayscale(0.35) brightness(0.8);
+      box-shadow:
+        0 0 6px rgba(21, 128, 61, 0.4),
+        0 6px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    .world-node:hover:not(.disabled) {
+      transform: translate(-50%, -52%) scale(1.05);
+      box-shadow:
+        0 0 20px rgba(52, 211, 153, 1),
+        0 12px 20px rgba(0, 0, 0, 1);
+      filter: brightness(1.08);
+    }
+
+    .world-node.current:not(.disabled) {
+      animation: nodePulse 1.5s ease-in-out infinite;
+      box-shadow:
+        0 0 22px rgba(163, 230, 53, 0.95),
+        0 12px 22px rgba(0, 0, 0, 1);
+      border-color: #facc15;
+    }
+
+    .world-node-boss {
+      background:
+        radial-gradient(circle at 30% 15%, rgba(254, 242, 242, 0.95), transparent 55%),
+        radial-gradient(circle at center, #f97316, #b91c1c 65%, #450a0a 100%);
+      box-shadow:
+        0 0 22px rgba(248, 113, 113, 0.95),
+        0 12px 22px rgba(0, 0, 0, 1);
+      border-color: rgba(254, 226, 226, 0.9);
+    }
+
+    .world-node-level {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #064e3b;
+      text-shadow: 0 0 6px rgba(187, 247, 208, 0.9);
+    }
+
+    .world-node-name {
+      font-size: 0.65rem;
+      color: #dcfce7;
+      text-align: center;
+      margin-top: 2px;
+      padding: 0 4px;
+      line-height: 1.1;
+    }
+
+    .world-node::after {
+      content: "";
+      position: absolute;
+      inset: 5px;
+      border-radius: inherit;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      box-shadow: inset 0 0 10px rgba(34, 197, 94, 0.6);
+      pointer-events: none;
+    }
+
+    @keyframes nodePulse {
+      0%   { transform: translate(-50%, -50%) scale(1); }
+      50%  { transform: translate(-50%, -52%) scale(1.06); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+
+    /* Partikel im Wald */
+    #forest-particles {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #forest-particles .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #bbf7d0 0, transparent 70%);
+      opacity: 0;
+      animation: particleFloat 8s linear infinite;
+    }
+
+    #forest-particles .particle:nth-child(1) {
+      left: 15%;
+      animation-delay: 0s;
+    }
+    #forest-particles .particle:nth-child(2) {
+      left: 40%;
+      animation-delay: 2s;
+    }
+    #forest-particles .particle:nth-child(3) {
+      left: 65%;
+      animation-delay: 4s;
+    }
+    #forest-particles .particle:nth-child(4) {
+      left: 80%;
+      animation-delay: 6s;
+    }
+    #forest-particles .particle:nth-child(5) {
+      left: 25%;
+      animation-delay: 1s;
+    }
+
+    @keyframes particleFloat {
+      0% {
+        transform: translateY(120%);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.6;
+      }
+      70% {
+        opacity: 0.4;
+      }
+      100% {
+        transform: translateY(-20%);
+        opacity: 0;
+      }
+    }
+
+    /* Kampf-Container */
+    #game-container {
+      margin: 12px 0 32px;
+      padding: 18px;
+      background: rgba(2, 6, 23, 0.96);
+      border-radius: 16px;
+      box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(148, 163, 184, 0.08);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      max-width: 520px;
+      width: 100%;
+    }
+
+    #battle {
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      align-items: stretch;
+      width: 100%;
+    }
+
+    .fighter {
+      position: relative;
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: radial-gradient(circle at top, #111827, #020617 60%);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.75);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow: hidden;
+    }
+
+    .fighter .name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+    }
+
+    .fighter .role {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .hp-bar {
+      height: 16px;
+      border-radius: 999px;
+      background: #020617;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(30, 64, 175, 0.7);
+    }
+
+    .hp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, #4ade80);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
+      transition: width 0.2s;
+    }
+
+    .hp-fill.enemy {
+      background: linear-gradient(90deg, #f97316, #ef4444);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+    }
+
+    .hp-text {
+      font-size: 0.8rem;
+      color: #e5e7eb;
+    }
+
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+
+    .stat-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-pill .value {
+      color: #fbbf24;
+      font-weight: 600;
+    }
+
+    /* Meta-HUD: Punkte & Combo */
+    #meta-hud {
+      margin-top: 6px;
+      margin-bottom: 4px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+    }
+
+    .meta-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #e5e7eb;
+    }
+
+    .meta-value {
+      font-weight: 600;
+      color: #fbbf24;
+    }
+
+    /* Floating Damage / Heal / Schild */
+    .float-text {
+      position: absolute;
+      left: 50%;
+      top: 8px;
+      transform: translateX(-50%);
+      font-size: 0.9rem;
+      font-weight: 700;
+      pointer-events: none;
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+      opacity: 0;
+      animation: floatUpLong 1.5s ease-out forwards;
+      z-index: 3;
+    }
+
+    .float-text.damage {
+      color: #fecaca;
+    }
+
+    .float-text.heal {
+      color: #bbf7d0;
+    }
+
+    .float-text.shield {
+      color: #fef9c3;
+    }
+
+    @keyframes floatUpLong {
+      0% {
+        transform: translate(-50%, 8px);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -24px);
+        opacity: 0;
+      }
+    }
+
+    /* Board & Tiles */
+    #board {
+      display: grid;
+      grid-template-columns: repeat(6, 60px);
+      gap: 6px;
+      padding: 8px;
+      background: radial-gradient(circle at top, #020617, #020617 55%, #000);
+      border-radius: 12px;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+      margin-top: 6px;
+    }
+
+    .tile {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+      border: 2px solid rgba(15, 23, 42, 0.9);
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        filter 0.12s ease;
+    }
+
+    .tile::before {
+      content: "";
+      position: absolute;
+      inset: 4px 6px auto 6px;
+      height: 45%;
+      border-radius: 999px;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.65),
+        rgba(255, 255, 255, 0)
+      );
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .tile:hover {
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.9);
+      filter: brightness(1.05);
+    }
+
+    .tile.selected {
+      transform: translateY(-2px) scale(1.08);
+      box-shadow:
+        0 0 20px rgba(250, 204, 21, 0.95),
+        0 8px 18px rgba(0, 0, 0, 0.9);
+      border-color: #facc15;
+    }
+
+    #message {
+      min-height: 22px;
+      font-size: 0.86rem;
+      color: #9ca3af;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    #controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    /* Board-Effekte */
+    .shake {
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+      100% { transform: translateX(0); }
+    }
+
+    .combo-flash {
+      animation: flash 0.35s ease-out forwards;
+    }
+
+    @keyframes flash {
+      0%   { filter: brightness(1); }
+      20%  { filter: brightness(2); }
+      40%  { filter: brightness(1.4); }
+      100% { filter: brightness(1); }
+    }
+
+    /* Boss-Glow im Kampf */
+    .boss-rage {
+      animation: bossGlow 1.2s ease infinite alternate;
+    }
+
+    @keyframes bossGlow {
+      0%   { filter: drop-shadow(0 0 4px #f97316); }
+      100% { filter: drop-shadow(0 0 18px #ef4444); }
+    }
+
+    @media (max-width: 640px) {
+      #battle {
+        flex-direction: column;
+      }
+      #board {
+        grid-template-columns: repeat(6, 50px);
+      }
+      .tile {
+        width: 50px;
+        height: 50px;
+      }
+      .world-node {
+        width: 64px;
+        height: 64px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Runes3D – Wald der Runen</h1>
+  <div class="subtitle">
+    Weltkarte im Wald-Stil, Match-3 Kämpfe und ein Leben-System ähnlich wie Candy Crush.
+  </div>
+
+  <div id="legend">
+    <span class="legend-item">💚 Leben</span>
+    <span class="legend-item">🧍 Held</span>
+    <span class="legend-item">🔺 Gegner (Level-Knoten)</span>
+  </div>
+
+  <div id="top-controls">
+    <button id="btn-show-world">Weltkarte</button>
+    <button id="btn-start-level1">Level 1 spielen</button>
+  </div>
+
+  <!-- Leben / Timer -->
+  <div id="lives-container">
+    <div id="lives-hearts"></div>
+    <div id="lives-text"></div>
+  </div>
+
+  <!-- Overworld / Welt 1 mit 21 Leveln -->
+  <div id="overworld-container">
+    <div id="overworld-header">
+      <div>
+        <div id="overworld-title">Welt 1 – Wald der Runen</div>
+        <div id="overworld-subtitle">Reise von Lichtung zu Lichtung und stelle dich den Runengeistern.</div>
+      </div>
+      <div style="font-size:0.75rem;color:#bbf7d0;">
+        Klicke eine Rune, um ein Level zu starten.
+      </div>
+    </div>
+
+    <div id="overworld-map">
+      <div id="overworld-path"></div>
+
+      <div id="forest-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+
+      <!-- 21 Level in Welt 1 – Pfad schlängelt sich -->
+      <div class="world-row">
+        <div class="world-node" data-level="1">
+          <div class="world-node-level">1</div>
+          <div class="world-node-name">Waldrand</div>
+        </div>
+        <div class="world-node disabled" data-level="2">
+          <div class="world-node-level">2</div>
+          <div class="world-node-name">Moosige Senke</div>
+        </div>
+        <div class="world-node disabled" data-level="3">
+          <div class="world-node-level">3</div>
+          <div class="world-node-name">Flüsterpfad</div>
+        </div>
+      </div>
+
+      <div class="world-row">
+        <div class="world-node disabled" data-level="4">
+          <div class="world-node-level">4</div>
+          <div class="world-node-name">Verwunschene<br>Lichtung</div>
+        </div>
+        <div class="world-node disabled" data-level="5">
+          <div class="world-node-level">5</div>
+          <div class="world-node-name">Runenbrücke</div>
+        </div>
+        <div class="world-node disabled" data-level="6">
+          <div class="world-node-level">6</div>
+          <div class="world-node-name">Steinkreis</div>
+        </div>
+      </div>
+
+      <div class="world-row">
+        <div class="world-node disabled" data-level="7">
+          <div class="world-node-level">7</div>
+          <div class="world-node-name">Nebelpfad</div>
+        </div>
+        <div class="world-node disabled" data-level="8">
+          <div class="world-node-level">8</div>
+          <div class="world-node-name">Wurzelpass</div>
+        </div>
+        <div class="world-node disabled" data-level="9">
+          <div class="world-node-level">9</div>
+          <div class="world-node-name">Mondlichtlichtung</div>
+        </div>
+      </div>
+
+      <div class="world-row">
+        <div class="world-node disabled" data-level="10">
+          <div class="world-node-level">10</div>
+          <div class="world-node-name">Kristallbäume</div>
+        </div>
+        <div class="world-node disabled" data-level="11">
+          <div class="world-node-level">11</div>
+          <div class="world-node-name">Runenfels</div>
+        </div>
+        <div class="world-node disabled" data-level="12">
+          <div class="world-node-level">12</div>
+          <div class="world-node-name">Brunnen<br>der Geister</div>
+        </div>
+      </div>
+
+      <div class="world-row">
+        <div class="world-node disabled" data-level="13">
+          <div class="world-node-level">13</div>
+          <div class="world-node-name">Dämmerpfad</div>
+        </div>
+        <div class="world-node disabled" data-level="14">
+          <div class="world-node-level">14</div>
+          <div class="world-node-name">Wächtersteine</div>
+        </div>
+        <div class="world-node disabled" data-level="15">
+          <div class="world-node-level">15</div>
+          <div class="world-node-name">Funkelgraben</div>
+        </div>
+      </div>
+
+      <div class="world-row">
+        <div class="world-node disabled" data-level="16">
+          <div class="world-node-level">16</div>
+          <div class="world-node-name">Smaragdpfad</div>
+        </div>
+        <div class="world-node disabled" data-level="17">
+          <div class="world-node-level">17</div>
+          <div class="world-node-name">Rune der Tiefe</div>
+        </div>
+        <div class="world-node disabled" data-level="18">
+          <div class="world-node-level">18</div>
+          <div class="world-node-name">Efeuarchen</div>
+        </div>
+      </div>
+
+      <div class="world-row">
+        <div class="world-node disabled" data-level="19">
+          <div class="world-node-level">19</div>
+          <div class="world-node-name">Schattenhain</div>
+        </div>
+        <div class="world-node disabled" data-level="20">
+          <div class="world-node-level">20</div>
+          <div class="world-node-name">Alte Ruinen</div>
+        </div>
+        <div class="world-node disabled world-node-boss" data-level="21">
+          <div class="world-node-level">21</div>
+          <div class="world-node-name">Herz des Waldes</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="overworld-message"></div>
+  </div>
+
+  <!-- Match-3 Kampf -->
+  <div id="game-container">
+    <div id="battle">
+      <div id="hero-card" class="fighter">
+        <div class="name">Held</div>
+        <div class="role">Runenbeschwörer</div>
+        <div class="hp-bar">
+          <div id="hero-hp-fill" class="hp-fill"></div>
+        </div>
+        <div id="hero-hp-text" class="hp-text"></div>
+        <div class="stats-row">
+          <div class="stat-pill">Mana: <span id="hero-mana" class="value">0</span></div>
+          <div class="stat-pill">Schild: <span id="hero-shield" class="value">0</span></div>
+          <div class="stat-pill">Ult: <span id="hero-ult" class="value">0</span></div>
+        </div>
+      </div>
+
+      <div id="enemy-card" class="fighter">
+        <div id="enemy-name" class="name">Gegner</div>
+        <div id="enemy-role" class="role"></div>
+        <div class="hp-bar">
+          <div id="enemy-hp-fill" class="hp-fill enemy"></div>
+        </div>
+        <div id="enemy-hp-text" class="hp-text"></div>
+        <div class="stats-row">
+          <div class="stat-pill">Angriff: <span id="enemy-attack" class="value"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Punkte & Combos -->
+    <div id="meta-hud">
+      <div class="meta-pill">
+        Punkte:
+        <span id="score-value" class="meta-value">0</span>
+      </div>
+      <div class="meta-pill">
+        Combo:
+        <span id="combo-value" class="meta-value">0</span>
+      </div>
+    </div>
+
+    <div id="board"></div>
+    <div id="message"></div>
+
+    <div id="controls">
+      <button id="new-game-btn">Neuer Kampf</button>
+      <button id="back-to-world-btn">Zurück zur Weltkarte</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Grunddaten ---
+    const ROWS = 6;
+    const COLS = 6;
+    const COLORS = ["#ef4444", "#3b82f6", "#22c55e", "#eab308", "#a855f7"]; // Rot, Blau, Grün, Gelb, Lila
+
+    const COLOR_TYPES = {
+      "#ef4444": "red",
+      "#3b82f6": "blue",
+      "#22c55e": "green",
+      "#eab308": "yellow",
+      "#a855f7": "purple"
+    };
+
+    // DOM-Referenzen
+    const overworldContainer = document.getElementById("overworld-container");
+    const overworldMessage = document.getElementById("overworld-message");
+    const overworldMap = document.getElementById("overworld-map");
+    const worldNodes = document.querySelectorAll(".world-node");
+
+    const livesHeartsEl = document.getElementById("lives-hearts");
+    const livesTextEl = document.getElementById("lives-text");
+
+    const gameContainer = document.getElementById("game-container");
+    const boardEl = document.getElementById("board");
+    const messageEl = document.getElementById("message");
+
+    const heroHPFill = document.getElementById("hero-hp-fill");
+    const heroHPText = document.getElementById("hero-hp-text");
+    const enemyHPFill = document.getElementById("enemy-hp-fill");
+    const enemyHPText = document.getElementById("enemy-hp-text");
+
+    const heroManaEl = document.getElementById("hero-mana");
+    const heroShieldEl = document.getElementById("hero-shield");
+    const heroUltEl = document.getElementById("hero-ult");
+
+    const enemyNameEl = document.getElementById("enemy-name");
+    const enemyRoleEl = document.getElementById("enemy-role");
+    const enemyAttackEl = document.getElementById("enemy-attack");
+
+    const heroCard = document.getElementById("hero-card");
+    const enemyCard = document.getElementById("enemy-card");
+
+    const btnShowWorld = document.getElementById("btn-show-world");
+    const btnStartLevel1 = document.getElementById("btn-start-level1");
+    const btnNewGame = document.getElementById("new-game-btn");
+    const btnBackToWorld = document.getElementById("back-to-world-btn");
+
+    const scoreEl = document.getElementById("score-value");
+    const comboEl = document.getElementById("combo-value");
+
+    // Leben-System
+    const MAX_LIVES = 5;
+    const LIFE_REGEN_MINUTES = 15;
+    const LIFE_REGEN_MS = LIFE_REGEN_MINUTES * 60 * 1000;
+    const LIVES_STORAGE_KEY = "runes3d_lives_v1";
+
+    let livesState = {
+      lives: MAX_LIVES,
+      lastUpdate: Date.now()
+    };
+
+    // Spielzustand
+    let board = [];
+    let selectedTile = null;
+    let hero;
+    let enemy;
+    let battleOver = false;
+
+    let currentLevel = 1;
+    let maxUnlockedLevel = 1; // Start: nur Level 1
+
+    // Wie weit der Spieler auf der Karte "in die Zukunft" sehen darf
+    const VISIBLE_LEVEL_AHEAD = 0;
+
+    let score = 0;
+    let comboChain = 0;
+
+    function updateMetaHUD() {
+      if (scoreEl) scoreEl.textContent = score.toString();
+      if (comboEl) comboEl.textContent = comboChain.toString();
+    }
+
+    // --- Positionen der 21 Level (Prozentwerte relativ zur Karte) ---
+    // Kannst du jederzeit feinjustieren, wenn ein Punkt nicht exakt auf einem Stein sitzt.
+    const world1Positions = [
+      { x: 0.16, y: 0.82 }, // 1 – unten links
+      { x: 0.24, y: 0.77 }, // 2
+      { x: 0.32, y: 0.72 }, // 3
+      { x: 0.40, y: 0.68 }, // 4
+      { x: 0.47, y: 0.63 }, // 5
+      { x: 0.54, y: 0.59 }, // 6
+      { x: 0.60, y: 0.54 }, // 7
+      { x: 0.66, y: 0.49 }, // 8
+      { x: 0.71, y: 0.44 }, // 9
+      { x: 0.74, y: 0.38 }, // 10
+      { x: 0.70, y: 0.33 }, // 11 – kleiner Schlenker
+      { x: 0.63, y: 0.30 }, // 12
+      { x: 0.56, y: 0.28 }, // 13
+      { x: 0.48, y: 0.27 }, // 14
+      { x: 0.40, y: 0.28 }, // 15
+      { x: 0.33, y: 0.30 }, // 16
+      { x: 0.27, y: 0.34 }, // 17
+      { x: 0.22, y: 0.39 }, // 18
+      { x: 0.19, y: 0.45 }, // 19
+      { x: 0.20, y: 0.52 }, // 20
+      { x: 0.23, y: 0.58 }  // 21 – näher Richtung Mitte
+    ];
+
+    function applyWorldPositions() {
+      worldNodes.forEach(node => {
+        const level = parseInt(node.dataset.level, 10);
+        const pos = world1Positions[level - 1];
+        if (!pos) return;
+        node.style.left = (pos.x * 100) + "%";
+        node.style.top = (pos.y * 100) + "%";
+      });
+    }
+
+    // --- Leben laden/speichern ---
+    function loadLivesState() {
+      try {
+        const raw = localStorage.getItem(LIVES_STORAGE_KEY);
+        if (!raw) return;
+        const obj = JSON.parse(raw);
+        if (typeof obj.lives === "number" && typeof obj.lastUpdate === "number") {
+          livesState = obj;
+        }
+      } catch (e) {
+        console.warn("Lives-State konnte nicht geladen werden:", e);
+      }
+    }
+
+    function saveLivesState() {
+      try {
+        localStorage.setItem(LIVES_STORAGE_KEY, JSON.stringify(livesState));
+      } catch (e) {
+        console.warn("Lives-State konnte nicht gespeichert werden:", e);
+      }
+    }
+
+    function updateLivesFromTime() {
+      const now = Date.now();
+      if (livesState.lives >= MAX_LIVES) {
+        livesState.lastUpdate = now;
+        return;
+      }
+      const elapsed = now - livesState.lastUpdate;
+      if (elapsed <= 0) return;
+
+      const regained = Math.floor(elapsed / LIFE_REGEN_MS);
+      if (regained > 0) {
+        livesState.lives = Math.min(MAX_LIVES, livesState.lives + regained);
+        livesState.lastUpdate = livesState.lastUpdate + regained * LIFE_REGEN_MS;
+        saveLivesState();
+      }
+    }
+
+    function updateLivesUI() {
+      updateLivesFromTime();
+      let hearts = "";
+      for (let i = 0; i < MAX_LIVES; i++) {
+        hearts += i < livesState.lives ? "❤️" : "🖤";
+      }
+      livesHeartsEl.textContent = hearts;
+
+      if (livesState.lives >= MAX_LIVES) {
+        livesTextEl.textContent = "Volle Leben.";
+      } else {
+        const now = Date.now();
+        const elapsed = now - livesState.lastUpdate;
+        const remaining = LIFE_REGEN_MS - elapsed;
+        const totalSeconds = Math.max(0, Math.ceil(remaining / 1000));
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        livesTextEl.textContent =
+          "Nächstes Leben in " +
+          minutes +
+          ":" +
+          seconds.toString().padStart(2, "0") +
+          " Minuten.";
+      }
+    }
+
+    function consumeLife() {
+      updateLivesFromTime();
+      if (livesState.lives <= 0) {
+        return false;
+      }
+      const wasFull = livesState.lives === MAX_LIVES;
+      livesState.lives--;
+      if (wasFull && livesState.lives === MAX_LIVES - 1) {
+        livesState.lastUpdate = Date.now();
+      }
+      saveLivesState();
+      updateLivesUI();
+      return true;
+    }
+
+    // --- Weltkarte ---
+    function updateWorldUnlockUI() {
+      const MAX_LEVEL_IN_WORLD = 21;
+      const maxVisibleLevel = Math.min(
+        MAX_LEVEL_IN_WORLD,
+        maxUnlockedLevel + VISIBLE_LEVEL_AHEAD
+      );
+
+      worldNodes.forEach(node => {
+        const level = parseInt(node.dataset.level, 10);
+
+        if (level > maxVisibleLevel) {
+          node.style.visibility = "hidden";
+          return;
+        } else {
+          node.style.visibility = "visible";
+        }
+
+        if (level <= maxUnlockedLevel) {
+          node.classList.remove("disabled");
+        } else {
+          node.classList.add("disabled");
+        }
+
+        if (level === maxUnlockedLevel) {
+          node.classList.add("current");
+        } else {
+          node.classList.remove("current");
+        }
+      });
+    }
+
+    function showWorld() {
+      gameContainer.style.display = "none";
+      overworldContainer.style.display = "flex";
+      updateWorldUnlockUI();
+      overworldMessage.textContent =
+        "Wähle eine Runen-Lichtung aus, um in den Kampf zu ziehen.";
+    }
+
+    function startLevelFromWorld(level) {
+      if (level > maxUnlockedLevel) {
+        overworldMessage.textContent = "Level " + level + " ist noch gesperrt.";
+        return;
+      }
+
+      updateLivesFromTime();
+      if (livesState.lives <= 0) {
+        updateLivesUI();
+        overworldMessage.textContent =
+          "Keine Leben mehr. Warte, bis sich ein Leben regeneriert, um weiterzuspielen.";
+        return;
+      }
+
+      overworldContainer.style.display = "none";
+      gameContainer.style.display = "flex";
+      initBattle(level);
+    }
+
+    // --- Kampf-Setup ---
+    function initBattle(level) {
+      battleOver = false;
+      currentLevel = level;
+
+      score = 0;
+      comboChain = 0;
+      updateMetaHUD();
+
+      hero = {
+        maxHP: 100,
+        hp: 100,
+        mana: 0,
+        shield: 0,
+        ult: 0
+      };
+
+      enemy = createEnemyForLevel(level);
+      renderHUD();
+      initBoard();
+
+      messageEl.textContent =
+        "Level " +
+        level +
+        ": Rot = Schaden, Grün = Heilung, Blau = Mana, Gelb = Schild, Lila = Spezialenergie.";
+    }
+
+    // Gegner-Skalierung: erste 21 Level bewusst einfach
+    function createEnemyForLevel(level) {
+      const WORLD_SIZE = 21;
+      const worldIndex = Math.floor((level - 1) / WORLD_SIZE) + 1;
+      const levelInWorld = ((level - 1) % WORLD_SIZE) + 1;
+
+      const baseHPWorld1 = 50;
+      const baseAttackWorld1 = 4;
+      const hpPerLevelWorld1 = 2;    // sehr sanft
+      const atkPerLevelWorld1 = 0.4; // sehr sanft
+
+      const worldHpFactor = 1 + 0.5 * (worldIndex - 1);
+      const worldAtkFactor = 1 + 0.5 * (worldIndex - 1);
+
+      const hpRaw =
+        baseHPWorld1 + (levelInWorld - 1) * hpPerLevelWorld1;
+      const atkRaw =
+        baseAttackWorld1 + (levelInWorld - 1) * atkPerLevelWorld1;
+
+      let baseHP = Math.round(hpRaw * worldHpFactor);
+      let baseAttack = Math.round(atkRaw * worldAtkFactor);
+
+      const isBoss =
+        worldIndex === 1 && (levelInWorld === 5 || levelInWorld === 21);
+
+      if (isBoss) {
+        baseHP = Math.round(baseHP * 1.5);
+        baseAttack = Math.round(baseAttack * 1.4);
+        enemyNameEl.textContent =
+          levelInWorld === 21
+            ? "Herz des Waldes (Boss)"
+            : "Runenwächter (Boss)";
+        enemyRoleEl.textContent = "Beschützer des Waldes";
+      } else {
+        enemyNameEl.textContent =
+          "Runengeist (Welt " + worldIndex + " – Level " + levelInWorld + ")";
+        enemyRoleEl.textContent = "Wesen des Waldes";
+      }
+
+      enemyAttackEl.textContent = baseAttack.toString();
+
+      return {
+        maxHP: baseHP,
+        hp: baseHP,
+        attack: baseAttack,
+        isBoss: isBoss,
+        enraged: false
+      };
+    }
+
+    function renderHUD() {
+      const heroPct = (hero.hp / hero.maxHP) * 100;
+      heroHPFill.style.width = Math.max(0, heroPct) + "%";
+      heroHPText.textContent = hero.hp + " / " + hero.maxHP + " HP";
+
+      const enemyPct = (enemy.hp / enemy.maxHP) * 100;
+      enemyHPFill.style.width = Math.max(0, enemyPct) + "%";
+      enemyHPText.textContent = enemy.hp + " / " + enemy.maxHP + " HP";
+
+      heroManaEl.textContent = hero.mana;
+      heroShieldEl.textContent = hero.shield;
+      heroUltEl.textContent = hero.ult;
+    }
+
+    // --- Board / Match-3 ---
+    function randomColor() {
+      return COLORS[Math.floor(Math.random() * COLORS.length)];
+    }
+
+    function initBoard() {
+      board = [];
+      for (let r = 0; r < ROWS; r++) {
+        const row = [];
+        for (let c = 0; c < COLS; c++) {
+          row.push(randomColor());
+        }
+        board.push(row);
+      }
+      resolveBoard(true);
+      renderBoard();
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = "";
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const tile = document.createElement("div");
+          tile.classList.add("tile");
+          tile.style.backgroundColor = board[r][c];
+          tile.dataset.r = r.toString();
+          tile.dataset.c = c.toString();
+          tile.addEventListener("click", () => onTileClick(r, c));
+          boardEl.appendChild(tile);
+        }
+      }
+      highlightSelected();
+    }
+
+    function highlightSelected() {
+      const tiles = document.querySelectorAll(".tile");
+      tiles.forEach(t => t.classList.remove("selected"));
+      if (!selectedTile) return;
+      const selector =
+        '.tile[data-r="' + selectedTile.r + '"][data-c="' + selectedTile.c + '"]';
+      const el = document.querySelector(selector);
+      if (el) el.classList.add("selected");
+    }
+
+    function onTileClick(r, c) {
+      if (battleOver) return;
+      if (!selectedTile) {
+        selectedTile = { r, c };
+        highlightSelected();
+        messageEl.textContent = "Wähle einen benachbarten Stein zum Tauschen.";
+        return;
+      }
+
+      const { r: sr, c: sc } = selectedTile;
+      if (sr === r && sc === c) {
+        selectedTile = null;
+        highlightSelected();
+        messageEl.textContent = "";
+        return;
+      }
+
+      const dist = Math.abs(sr - r) + Math.abs(sc - c);
+      if (dist !== 1) {
+        messageEl.textContent =
+          "Nur angrenzende Steine (horizontal/vertikal) können getauscht werden.";
+        selectedTile = null;
+        highlightSelected();
+        return;
+      }
+
+      swapTiles(sr, sc, r, c);
+      const matches = findMatches();
+      if (matches.length === 0) {
+        swapTiles(sr, sc, r, c);
+        renderBoard();
+        messageEl.textContent = "Kein Match – Zug ungültig.";
+      } else {
+        resolveBoard(false);
+      }
+
+      selectedTile = null;
+      highlightSelected();
+    }
+
+    function swapTiles(r1, c1, r2, c2) {
+      const tmp = board[r1][c1];
+      board[r1][c1] = board[r2][c2];
+      board[r2][c2] = tmp;
+    }
+
+    function findMatches() {
+      const matches = [];
+
+      // Horizontal
+      for (let r = 0; r < ROWS; r++) {
+        let start = 0;
+        for (let c = 1; c <= COLS; c++) {
+          if (c < COLS && board[r][c] === board[r][start]) continue;
+          if (c - start >= 3) {
+            for (let i = start; i < c; i++) {
+              matches.push({ r, c: i });
+            }
+          }
+          start = c;
+        }
+      }
+
+      // Vertikal
+      for (let c = 0; c < COLS; c++) {
+        let start = 0;
+        for (let r = 1; r <= ROWS; r++) {
+          if (r < ROWS && board[r][c] === board[start][c]) continue;
+          if (r - start >= 3) {
+            for (let i = start; i < r; i++) {
+              matches.push({ r: i, c });
+            }
+          }
+          start = r;
+        }
+      }
+
+      const seen = new Set();
+      const result = [];
+      for (const m of matches) {
+        const key = m.r + "-" + m.c;
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push(m);
+        }
+      }
+      return result;
+    }
+
+    // Cluster für 3er/4er/5er/L/T
+    function clusterMatches(matches) {
+      const byKey = new Map();
+      for (const m of matches) {
+        byKey.set(m.r + "-" + m.c, m);
+      }
+
+      const visited = new Set();
+      const clusters = [];
+      const dirs = [
+        { dr: 1, dc: 0 },
+        { dr: -1, dc: 0 },
+        { dr: 0, dc: 1 },
+        { dr: 0, dc: -1 }
+      ];
+
+      for (const m of matches) {
+        const key = m.r + "-" + m.c;
+        if (visited.has(key)) continue;
+
+        const cluster = [];
+        const queue = [m];
+        visited.add(key);
+
+        while (queue.length > 0) {
+          const cur = queue.shift();
+          cluster.push(cur);
+
+          for (const d of dirs) {
+            const nr = cur.r + d.dr;
+            const nc = cur.c + d.dc;
+            const nkey = nr + "-" + nc;
+            if (byKey.has(nkey) && !visited.has(nkey)) {
+              visited.add(nkey);
+              queue.push(byKey.get(nkey));
+            }
+          }
+        }
+
+        clusters.push(cluster);
+      }
+
+      return clusters;
+    }
+
+    function applyGravity() {
+      for (let c = 0; c < COLS; c++) {
+        let writeRow = ROWS - 1;
+        for (let r = ROWS - 1; r >= 0; r--) {
+          if (board[r][c] != null) {
+            board[writeRow][c] = board[r][c];
+            if (writeRow !== r) {
+              board[r][c] = null;
+            }
+            writeRow--;
+          }
+        }
+        for (let r = writeRow; r >= 0; r--) {
+          board[r][c] = randomColor();
+        }
+      }
+    }
+
+    function showFloatText(parent, text, type) {
+      if (!parent) return;
+      const el = document.createElement("div");
+      el.classList.add("float-text");
+      if (type) el.classList.add(type);
+      el.textContent = text;
+      parent.appendChild(el);
+      setTimeout(() => el.remove(), 1600);
+    }
+
+    function resolveBoard(initial) {
+      let totalCleared = 0;
+      const counts = { red: 0, blue: 0, green: 0, yellow: 0, purple: 0 };
+
+      if (!initial) {
+        comboChain = 0;
+        updateMetaHUD();
+      }
+
+      function step() {
+        const matches = findMatches();
+        if (matches.length === 0) {
+          if (!initial && totalCleared > 0) {
+            applyPlayerEffects(counts);
+          } else if (initial) {
+            messageEl.textContent =
+              "Board bereit – starte den Kampf mit einem Match!";
+          }
+          renderBoard();
+          return;
+        }
+
+        comboChain++;
+        const clusters = clusterMatches(matches);
+
+        let wavePoints = 0;
+        for (const cluster of clusters) {
+          const length = cluster.length;
+
+          let basePoints = length * 10;
+          let lengthBonus = 1;
+
+          if (length === 4) {
+            lengthBonus = 1.5;
+          } else if (length >= 5) {
+            lengthBonus = 2.0;
+          }
+
+          const chainBonus = 1 + (comboChain - 1) * 0.5;
+
+          const gained = Math.round(basePoints * lengthBonus * chainBonus);
+          wavePoints += gained;
+        }
+
+        score += wavePoints;
+        updateMetaHUD();
+
+        if (!initial) {
+          if (comboChain === 1) {
+            messageEl.textContent =
+              "Match! +" + wavePoints + " Punkte · Combo x" + comboChain;
+          } else if (comboChain === 2) {
+            messageEl.textContent =
+              "Combo! Zweite Kettenreaktion! +" +
+              wavePoints +
+              " Punkte · Combo x" +
+              comboChain;
+            boardEl.classList.add("combo-flash");
+            setTimeout(() => boardEl.classList.remove("combo-flash"), 400);
+          } else if (comboChain >= 3) {
+            messageEl.textContent =
+              "Mega-Combo! (" +
+              comboChain +
+              ") +" +
+              wavePoints +
+              " Punkte!";
+            boardEl.classList.add("combo-flash");
+            setTimeout(() => boardEl.classList.remove("combo-flash"), 400);
+          }
+        }
+
+        for (const m of matches) {
+          const col = board[m.r][m.c];
+          const type = COLOR_TYPES[col];
+          if (type && counts[type] != null) counts[type]++;
+          board[m.r][m.c] = null;
+        }
+
+        totalCleared += matches.length;
+        applyGravity();
+        renderBoard();
+        setTimeout(step, 140);
+      }
+
+      step();
+    }
+
+    // --- Effekte & Gegnerzug ---
+    function applyPlayerEffects(counts) {
+      if (battleOver) return;
+
+      let logParts = [];
+
+      if (counts.red > 0) {
+        const dmg = counts.red * 5;
+        enemy.hp = Math.max(0, enemy.hp - dmg);
+        showFloatText(enemyCard, "-" + dmg, "damage");
+        logParts.push("Schaden " + dmg);
+      }
+
+      if (counts.green > 0) {
+        const heal = counts.green * 3;
+        const before = hero.hp;
+        hero.hp = Math.min(hero.maxHP, hero.hp + heal);
+        const actualHealing = hero.hp - before;
+        if (actualHealing > 0) {
+          showFloatText(heroCard, "+" + actualHealing, "heal");
+          logParts.push("Heilung " + actualHealing);
+        }
+      }
+
+      if (counts.blue > 0) {
+        const mana = counts.blue * 5;
+        hero.mana = Math.min(100, hero.mana + mana);
+        logParts.push("Mana +" + mana);
+      }
+
+      if (counts.yellow > 0) {
+        const shieldGain = counts.yellow * 2;
+        hero.shield = Math.min(50, hero.shield + shieldGain);
+        showFloatText(heroCard, "+" + shieldGain + " Schild", "shield");
+        logParts.push("Schild +" + shieldGain);
+      }
+
+      if (counts.purple > 0) {
+        const ultGain = counts.purple * 10;
+        hero.ult = Math.min(100, hero.ult + ultGain);
+        logParts.push("Ult +" + ultGain + "%");
+      }
+
+      renderHUD();
+
+      if (logParts.length > 0) {
+        messageEl.textContent = "Dein Zug: " + logParts.join(" · ");
+      } else {
+        messageEl.textContent = "Keine Effekte ausgelöst.";
+      }
+
+      if (checkBattleEnd()) return;
+
+      setTimeout(() => {
+        enemyTurn();
+      }, 600);
+    }
+
+    function enemyTurn() {
+      if (battleOver) return;
+      if (enemy.hp <= 0 || hero.hp <= 0) return;
+
+      let dmg = enemy.attack;
+
+      if (enemy.isBoss && enemy.hp <= enemy.maxHP * 0.5) {
+        if (!enemy.enraged) {
+          enemy.enraged = true;
+          messageEl.textContent =
+            "Der Boss gerät in Raserei! Seine Angriffe werden stärker!";
+          enemyCard.classList.add("boss-rage");
+        }
+        dmg = Math.round(dmg * 1.4);
+      }
+
+      if (hero.shield > 0) {
+        dmg = Math.max(1, Math.round(dmg - hero.shield * 0.3));
+        hero.shield = Math.max(0, hero.shield - 5);
+      }
+
+      hero.hp = Math.max(0, hero.hp - dmg);
+      showFloatText(heroCard, "-" + dmg, "damage");
+      renderHUD();
+
+      boardEl.classList.add("shake");
+      setTimeout(() => boardEl.classList.remove("shake"), 500);
+
+      if (enemy.isBoss) {
+        messageEl.textContent += " | Boss greift an: -" + dmg + " HP";
+      } else {
+        messageEl.textContent += " | Gegner greift an: -" + dmg + " HP";
+      }
+
+      checkBattleEnd();
+    }
+
+    function checkBattleEnd() {
+      if (battleOver) return true;
+
+      if (hero.hp <= 0 && enemy.hp <= 0) {
+        messageEl.textContent = "Unentschieden – beide fallen gleichzeitig.";
+        battleOver = true;
+        enemyCard.classList.remove("boss-rage");
+        return true;
+      }
+
+      if (enemy.hp <= 0) {
+        if (enemy.isBoss) {
+          messageEl.textContent =
+            "Sieg! Du hast den Boss des Waldes besiegt – die Runen scheinen mächtiger zu werden.";
+        } else {
+          messageEl.textContent = "Sieg! Du hast den Runengeist besiegt.";
+        }
+        battleOver = true;
+        enemyCard.classList.remove("boss-rage");
+
+        if (currentLevel >= maxUnlockedLevel && currentLevel < 21) {
+          maxUnlockedLevel = currentLevel + 1;
+          updateWorldUnlockUI();
+        }
+
+        return true;
+      }
+
+      if (hero.hp <= 0) {
+        const hadLives = livesState.lives;
+        if (!consumeLife()) {
+          messageEl.textContent =
+            "Niederlage – keine Leben mehr. Warte, bis sich ein Leben regeneriert, um weiterzuspielen.";
+        } else {
+          const remaining = livesState.lives;
+          if (hadLives === MAX_LIVES) {
+            messageEl.textContent =
+              "Niederlage – du hast ein Leben verloren. Dir bleiben " +
+              remaining +
+              " Leben.";
+          } else {
+            messageEl.textContent =
+              "Niederlage – dir bleiben " + remaining + " Leben.";
+          }
+        }
+        battleOver = true;
+        enemyCard.classList.remove("boss-rage");
+        return true;
+      }
+
+      return false;
+    }
+
+    // --- Events ---
+    btnShowWorld.addEventListener("click", () => {
+      showWorld();
+    });
+
+    btnStartLevel1.addEventListener("click", () => {
+      startLevelFromWorld(1);
+    });
+
+    worldNodes.forEach(node => {
+      node.addEventListener("click", () => {
+        const level = parseInt(node.dataset.level, 10);
+        startLevelFromWorld(level);
+      });
+    });
+
+    btnNewGame.addEventListener("click", () => {
+      updateLivesFromTime();
+      if (livesState.lives <= 0) {
+        updateLivesUI();
+        messageEl.textContent =
+          "Keine Leben mehr. Warte, bis sich ein Leben regeneriert, um weiterzuspielen.";
+        return;
+      }
+      initBattle(currentLevel);
+    });
+
+    btnBackToWorld.addEventListener("click", () => {
+      gameContainer.style.display = "none";
+      overworldContainer.style.display = "flex";
+      updateWorldUnlockUI();
+      overworldMessage.textContent =
+        "Wähle eine Runen-Lichtung aus, um in den Kampf zu ziehen.";
+    });
+
+    // --- Init ---
+    window.addEventListener("load", () => {
+      loadLivesState();
+      updateLivesFromTime();
+      updateLivesUI();
+      applyWorldPositions();
+      updateWorldUnlockUI();
+      showWorld();
+      setInterval(updateLivesUI, 1000);
+      updateMetaHUD();
+    });
+  </script>
+</body>
+</html>
